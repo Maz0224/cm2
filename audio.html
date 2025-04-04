@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio to Sound Blocks</title>
+    <title>Sound Blocks Generator 2 </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,35 +45,41 @@
 </head>
 <body>
     <div id="container">
-        <h2>Audio to Sound Blocks</h2>
-        <input type="file" id="audioUpload" accept="audio/mp3">
-        <button onclick="processAudio()">Convert</button>
+        <h2>Sound Blocks Generator</h2>
+        <button onclick="generateSoundBlocks()">Generate Blocks</button>
         <button onclick="copyToClipboard()">Copy to Clipboard</button>
         <pre id="output"></pre>
     </div>
 
     <script>
-        function processAudio() {
-            const fileInput = document.getElementById('audioUpload');
-            if (!fileInput.files.length) return;
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const audioBuffer = e.target.result;
-                // Simulated audio processing to generate sound blocks:
-                let outputText = generateSoundBlocks();
-                document.getElementById('output').textContent = outputText;
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
         function generateSoundBlocks() {
-            // Example: Generating connected blocks with different tempos
-            let soundBlocks = [];
-            soundBlocks.push("7,0,0,0,0,392+0;");
-            soundBlocks.push("7,0,2,0,0,222+0?2,1??");
-            return soundBlocks.join("\n");
+            // Your provided example data for blocks and connections
+            const soundBlocks = [
+                "7,0,4,0,0,392+0;",
+                "7,0,6,0,0,222+0;",
+                "7,0,0,0,0,392+0;",
+                "7,0,2,0,0,222+0;",
+                "7,0,-4,0,0,392+0;",
+                "7,0,-2,0,0,222+0;",
+                "7,0,-8,0,0,392+0;",
+                "7,0,-6,0,0,222+0"
+            ];
+
+            const connections = [
+                "2,1;",
+                "4,3;",
+                "6,5;",
+                "8,7;",
+                "1,4;",
+                "3,6;",
+                "5,8?"
+            ];
+
+            // Combine blocks and connections into one final output
+            let outputText = soundBlocks.join("\n") + "\n";
+            outputText += connections.join("\n");
+
+            document.getElementById('output').textContent = outputText;
         }
 
         function copyToClipboard() {

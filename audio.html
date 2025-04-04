@@ -3,107 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sound Blocks Generator 2 </title>
+    <title>Audio to Sound Blocks</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-            background-color: #f4f4f4;
-        }
-        #container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        pre {
-            text-align: left;
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+        /* Your styling here */
     </style>
 </head>
 <body>
-    <div id="container">
-        <h2>Sound Blocks Generator</h2>
-        <button onclick="generateSoundBlocks()">Generate Blocks</button>
-        <button onclick="copyToClipboard()">Copy to Clipboard</button>
-        <pre id="output"></pre>
-    </div>
+    <h2>Audio to Sound Blocks</h2>
+    <input type="file" id="audioUpload" accept="audio/*">
+    <button onclick="processAudio()">Convert</button>
+    <pre id="output"></pre>
 
+    <script src="https://cdn.jsdelivr.net/npm/tone"></script>
     <script>
-        function generateSoundBlocks() {
-            // Your provided example data for blocks and connections
-            const soundBlocks = [
-                "7,0,4,0,0,392+0;",
-                "7,0,6,0,0,222+0;",
-                "7,0,0,0,0,392+0;",
-                "7,0,2,0,0,222+0;",
-                "7,0,-4,0,0,392+0;",
-                "7,0,-2,0,0,222+0;",
-                "7,0,-8,0,0,392+0;",
-                "7,0,-6,0,0,222+0"
-            ];
+        async function processAudio() {
+            const fileInput = document.getElementById('audioUpload');
+            if (!fileInput.files.length) return;
 
-            const connections = [
-                "2,1;",
-                "4,3;",
-                "6,5;",
-                "8,7;",
-                "1,4;",
-                "3,6;",
-                "5,8?"
-            ];
+            const audioFile = fileInput.files[0];
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-            // Combine blocks and connections into one final output
-            let outputText = soundBlocks.join("\n") + "\n";
-            outputText += connections.join("\n");
-
-            document.getElementById('output').textContent = outputText;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const arrayBuffer = event.target.result;
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                analyzeAudio(audioBuffer);
+            };
+            reader.readAsArrayBuffer(audioFile);
         }
 
-        function copyToClipboard() {
-            const outputText = document.getElementById('output').textContent;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(outputText).then(() => {
-                    alert("Copied to clipboard!");
-                }).catch(err => {
-                    alert("Failed to copy: " + err);
-                });
-            } else {
-                // Fallback for older browsers
-                const textArea = document.createElement("textarea");
-                textArea.value = outputText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    alert("Copied to clipboard!");
-                } catch (err) {
-                    alert("Failed to copy: " + err);
+        function analyzeAudio(audioBuffer) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const offlineContext = new OfflineAudioContext(1, audioBuffer.length, audioBuffer.sampleRate);
+            const bufferSource = offlineContext.createBufferSource();
+            bufferSource.buffer = audioBuffer;
+
+            // Create an analyser to process the audio
+            const analyser = offlineContext.createAnalyser();
+            analyser.fftSize = 2048;
+            bufferSource.connect(analyser);
+            analyser.connect(offlineContext.destination);
+
+            // Start processing
+            bufferSource.start();
+            offlineContext.startRendering().then((renderedBuffer) => {
+                const data = new Float32Array(analyser.frequencyBinCount);
+                analyser.getFloatFrequencyData(data);
+
+                let outputText = "Generated Sound Blocks:\n";
+
+                // Example: Generate blocks based on frequency data (simplified)
+                for (let i = 0; i < data.length; i++) {
+                    let frequency = data[i];
+                    if (frequency > -100) {  // Ignore very low volumes
+                        const pitch = Math.round(440 * Math.pow(2, (i - 69) / 12));  // Convert to pitch (simplified)
+                        const tempo = Math.round(120 + Math.random() * 40); // Random tempo for example
+                        outputText += `7,0,${i},0,0,${pitch}+${tempo};\n`;
+                    }
                 }
-                document.body.removeChild(textArea);
-            }
+
+                // Example: Add connections (simplified)
+                outputText += "1,2;3,4;5,6?";
+
+                document.getElementById('output').textContent = outputText;
+            }).catch(error => {
+                console.error("Error during audio analysis:", error);
+            });
         }
     </script>
 </body>

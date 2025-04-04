@@ -3,125 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio to Sound Blocks</title>
+    <title>Audio File Processor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
             text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
         }
-        input[type="file"] {
-            margin: 10px;
+        #container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
         }
         button {
             margin: 10px;
-            padding: 10px;
+            padding: 10px 20px;
             font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         pre {
-            margin-top: 20px;
+            text-align: left;
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
-            text-align: left;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
         }
     </style>
 </head>
 <body>
-    <h2>Audio to Sound Blocks</h2>
-    <input type="file" id="audioUpload" accept="audio/*">
-    <button onclick="processAudio()">Convert</button>
-    <button id="copyButton">Copy to Clipboard</button>
-    <div id="feedback"></div>
-    <pre id="output"></pre>
-
-    <script src="https://cdn.jsdelivr.net/npm/tone"></script>
+    <div id="container">
+        <h2>Audio File Processor</h2>
+        <input type="file" id="audioUpload" accept="audio/*">
+        <button onclick="processAudio()">Process Audio</button>
+        <button onclick="copyToClipboard()">Copy to Clipboard</button>
+        <pre id="output"></pre>
+    </div>
+    
     <script>
-        async function processAudio() {
+        function processAudio() {
             const fileInput = document.getElementById('audioUpload');
             if (!fileInput.files.length) return;
 
-            const audioFile = fileInput.files[0];
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
+            const file = fileInput.files[0];
+            const audio = new Audio();
             const reader = new FileReader();
-            reader.onload = async (event) => {
-                const arrayBuffer = event.target.result;
-                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                analyzeAudio(audioBuffer);
+
+            reader.onload = (e) => {
+                audio.src = e.target.result;
             };
-            reader.readAsArrayBuffer(audioFile);
-        }
 
-        function analyzeAudio(audioBuffer) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const offlineContext = new OfflineAudioContext(1, audioBuffer.length, audioBuffer.sampleRate);
-            const bufferSource = offlineContext.createBufferSource();
-            bufferSource.buffer = audioBuffer;
+            reader.readAsDataURL(file);
 
-            // Create an analyser to process the audio
-            const analyser = offlineContext.createAnalyser();
-            analyser.fftSize = 2048;
-            bufferSource.connect(analyser);
-            analyser.connect(offlineContext.destination);
+            audio.onloadedmetadata = () => {
+                const duration = audio.duration;
+                const format = file.type;
+                const fileSize = (file.size / 1024).toFixed(2) + ' KB';
 
-            // Start processing
-            bufferSource.start();
-            offlineContext.startRendering().then((renderedBuffer) => {
-                const data = new Float32Array(analyser.frequencyBinCount);
-                analyser.getFloatFrequencyData(data);
+                // Start processing the data according to the byte structure
+                let outputText = `
+File Name: ${file.name}
+File Size: ${fileSize}
+Format: ${format}
+Duration: ${duration.toFixed(2)} seconds
 
-                let outputText = "";
-                let blockCounter = 0;
+Processed Audio Data:
+`;
 
-                // Generate blocks based on frequency data (simplified)
-                for (let i = 0; i < data.length; i++) {
-                    let frequency = data[i];
-                    if (frequency > -100) {  // Ignore very low volumes
-                        const pitch = Math.round(440 * Math.pow(2, (i - 69) / 12));  // Convert to pitch (simplified)
-                        const tempo = Math.round(120 + Math.random() * 40); // Random tempo for example
+                // Example for processing data based on 4 bytes (tempo and frequency)
+                // Byte 1 -> Tempo (1, 10, 20, 30, etc.)
+                // Byte 2 -> Frequency (100, 200, 300, etc.)
+                let byte1 = 20; // Example tempo (can be read from a file or set dynamically)
+                let byte2 = 100; // Example frequency (can be read from a file or set dynamically)
+                let byte3 = 1; // Placeholder for other audio-related byte (e.g., amplitude)
+                let byte4 = 0; // Placeholder for other audio-related byte (e.g., pitch)
 
-                        // Build the sound block (simplified version)
-                        outputText += `7,0,${i},0,0,${pitch}+${tempo}`;
-                        blockCounter++;
+                // Calculate tempos (for byte1)
+                let tempo = byte1 * 10; // This will give 20, 30, etc.
 
-                        // Add a space to separate blocks
-                        if (blockCounter < data.length) {
-                            outputText += " ";
-                        }
-                    }
-                }
+                // Calculate frequencies (for byte2)
+                let frequency = byte2 * 100; // This will give 100, 200, etc.
 
-                // Finalize the output to one line
+                // Generate output for each byte's information
+                outputText += `
+Byte 1 (Tempo):
+ - Value: ${byte1}
+ - Calculated Tempo: ${tempo} BPM
+
+Byte 2 (Frequency):
+ - Value: ${byte2}
+ - Calculated Frequency: ${frequency} Hz
+
+Byte 3 (Amplitude):
+ - Value: ${byte3}
+
+Byte 4 (Pitch):
+ - Value: ${byte4}
+`;
+
                 document.getElementById('output').textContent = outputText;
-                document.getElementById('feedback').textContent = "Audio processed successfully!";
-                document.getElementById('feedback').classList.add('success');
-            }).catch(error => {
-                console.error("Error during audio analysis:", error);
-                document.getElementById('feedback').textContent = "Error processing audio.";
-                document.getElementById('feedback').classList.add('error');
-            });
+            };
         }
 
-        // Function to copy the output to clipboard
-        document.getElementById('copyButton').addEventListener('click', () => {
+        function copyToClipboard() {
             const outputText = document.getElementById('output').textContent;
             navigator.clipboard.writeText(outputText).then(() => {
-                document.getElementById('feedback').textContent = "Copied to clipboard!";
-                document.getElementById('feedback').classList.add('success');
+                alert("Copied to clipboard!");
             }).catch(err => {
-                document.getElementById('feedback').textContent = "Error copying to clipboard.";
-                document.getElementById('feedback').classList.add('error');
+                alert("Failed to copy: " + err);
             });
-        });
+        }
     </script>
 </body>
 </html>

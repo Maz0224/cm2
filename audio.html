@@ -72,7 +72,6 @@
                 const format = file.type;
                 const fileSize = (file.size / 1024).toFixed(2) + ' KB';
 
-                // Start processing the data according to the byte structure
                 let outputText = `
 File Name: ${file.name}
 File Size: ${fileSize}
@@ -82,39 +81,43 @@ Duration: ${duration.toFixed(2)} seconds
 Processed Audio Data:
 `;
 
-                // Example for processing data based on 4 bytes (tempo and frequency)
+                // Example for processing data based on 4 bytes (tempo, frequency, pitch)
                 // Byte 1 -> Tempo (1, 10, 20, 30, etc.)
                 // Byte 2 -> Frequency (100, 200, 300, etc.)
-                let byte1 = 20; // Example tempo (can be read from a file or set dynamically)
-                let byte2 = 100; // Example frequency (can be read from a file or set dynamically)
-                let byte3 = 1; // Placeholder for other audio-related byte (e.g., amplitude)
-                let byte4 = 0; // Placeholder for other audio-related byte (e.g., pitch)
+                // Byte 3 -> Pitch (represented in 4 bytes like 50 and 100)
+                let tempoByte = 20; // Example tempo (can be read from a file or set dynamically)
+                let frequencyByte = 100; // Example frequency (can be read from a file or set dynamically)
+                let pitchByte = 50; // Pitch example (desired value, like 50 or 100)
 
-                // Calculate tempos (for byte1)
-                let tempo = byte1 * 10; // This will give 20, 30, etc.
+                // Convert tempo and frequency to specific byte format
+                let tempoOutput = generateByteFormat(tempoByte);
+                let frequencyOutput = generateByteFormat(frequencyByte);
+                let pitchOutput = generateByteFormat(pitchByte);
 
-                // Calculate frequencies (for byte2)
-                let frequency = byte2 * 100; // This will give 100, 200, etc.
-
-                // Generate output for each byte's information
                 outputText += `
-Byte 1 (Tempo):
- - Value: ${byte1}
- - Calculated Tempo: ${tempo} BPM
+Tempo Byte (Tempo: ${tempoByte}): 
+${tempoOutput}
 
-Byte 2 (Frequency):
- - Value: ${byte2}
- - Calculated Frequency: ${frequency} Hz
+Frequency Byte (Frequency: ${frequencyByte}): 
+${frequencyOutput}
 
-Byte 3 (Amplitude):
- - Value: ${byte3}
-
-Byte 4 (Pitch):
- - Value: ${byte4}
+Pitch Byte (Pitch: ${pitchByte}): 
+${pitchOutput}
 `;
 
                 document.getElementById('output').textContent = outputText;
             };
+        }
+
+        function generateByteFormat(value) {
+            // Convert the value to a 4-byte format (binary representation)
+            let bytes = [];
+            for (let i = 0; i < 4; i++) {
+                bytes.push((value >> (i * 8)) & 0xFF); // Get each byte from the value
+            }
+
+            // Format the bytes in the output
+            return bytes.join(' ');
         }
 
         function copyToClipboard() {

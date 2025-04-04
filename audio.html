@@ -12,6 +12,7 @@
     <h2>Audio to Sound Blocks</h2>
     <input type="file" id="audioUpload" accept="audio/*">
     <button onclick="processAudio()">Convert</button>
+    <button id="copyButton">Copy to Clipboard</button>
     <pre id="output"></pre>
 
     <script src="https://cdn.jsdelivr.net/npm/tone"></script>
@@ -51,6 +52,8 @@
                 analyser.getFloatFrequencyData(data);
 
                 let outputText = "Generated Sound Blocks:\n";
+                let lastTempo = 120; // Default tempo if we can't find a better one
+                let blockCounter = 0;
 
                 // Example: Generate blocks based on frequency data (simplified)
                 for (let i = 0; i < data.length; i++) {
@@ -58,18 +61,37 @@
                     if (frequency > -100) {  // Ignore very low volumes
                         const pitch = Math.round(440 * Math.pow(2, (i - 69) / 12));  // Convert to pitch (simplified)
                         const tempo = Math.round(120 + Math.random() * 40); // Random tempo for example
+
+                        // Build the sound block (simplified version)
                         outputText += `7,0,${i},0,0,${pitch}+${tempo};\n`;
+                        blockCounter++;
+
+                        // Make connections if necessary (simplified)
+                        if (blockCounter > 1) {
+                            outputText += `${blockCounter-1},${blockCounter};\n`;
+                        }
+
+                        lastTempo = tempo; // Update the last tempo
                     }
                 }
 
-                // Example: Add connections (simplified)
-                outputText += "1,2;3,4;5,6?";
-
+                // Finalize the output
+                outputText += "Tempo/Connections: End\n";
                 document.getElementById('output').textContent = outputText;
             }).catch(error => {
                 console.error("Error during audio analysis:", error);
             });
         }
+
+        // Function to copy the output to clipboard
+        document.getElementById('copyButton').addEventListener('click', () => {
+            const outputText = document.getElementById('output').textContent;
+            navigator.clipboard.writeText(outputText).then(() => {
+                alert("Copied to clipboard!");
+            }).catch(err => {
+                alert("Error copying to clipboard: " + err);
+            });
+        });
     </script>
 </body>
 </html>

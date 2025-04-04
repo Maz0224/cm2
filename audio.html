@@ -50,7 +50,6 @@
 
                 let outputText = "";
                 let blockCounter = 0;
-                let lastTempo = 120; // Default tempo if we can't find a better one
 
                 // Generate blocks based on frequency data (simplified)
                 for (let i = 0; i < data.length; i++) {
@@ -63,9 +62,9 @@
                         outputText += `7,0,${i},0,0,${pitch}+${tempo}`;
                         blockCounter++;
 
-                        // Make connections if necessary (simplified)
-                        if (blockCounter > 1) {
-                            outputText += `;${blockCounter-1},${blockCounter}`;
+                        // Add a space to separate blocks
+                        if (blockCounter < data.length) {
+                            outputText += " ";
                         }
                     }
                 }

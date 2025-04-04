@@ -61,35 +61,43 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const audioBuffer = e.target.result;
-                // Here, you'd use a library like Web Audio API to analyze the MP3 file
-                // and extract the sound blocks, tempos, and connections.
-
-                let outputText = generateSoundBlocks(audioBuffer); // Placeholder for the block generation logic
+                // Simulated audio processing to generate sound blocks:
+                let outputText = generateSoundBlocks();
                 document.getElementById('output').textContent = outputText;
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function generateSoundBlocks(audioBuffer) {
-            // Placeholder: Convert audio into connected blocks based on tempo
+        function generateSoundBlocks() {
+            // Example: Generating connected blocks with different tempos
             let soundBlocks = [];
-            let previousTempo = 392; // Assume this comes from audio analysis
-            let currentTempo = 222;  // Similarly, analyze the current tempo
-
-            // Example of connected blocks
-            soundBlocks.push("7,0,0,0,0," + previousTempo + "+0;");
-            soundBlocks.push("7,0,2,0,0," + currentTempo + "+0?2,1??");
-
+            soundBlocks.push("7,0,0,0,0,392+0;");
+            soundBlocks.push("7,0,2,0,0,222+0?2,1??");
             return soundBlocks.join("\n");
         }
 
         function copyToClipboard() {
             const outputText = document.getElementById('output').textContent;
-            navigator.clipboard.writeText(outputText).then(() => {
-                alert("Copied to clipboard!");
-            }).catch(err => {
-                alert("Failed to copy: " + err);
-            });
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(outputText).then(() => {
+                    alert("Copied to clipboard!");
+                }).catch(err => {
+                    alert("Failed to copy: " + err);
+                });
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement("textarea");
+                textArea.value = outputText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert("Copied to clipboard!");
+                } catch (err) {
+                    alert("Failed to copy: " + err);
+                }
+                document.body.removeChild(textArea);
+            }
         }
     </script>
 </body>

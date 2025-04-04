@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio to Sound Blocks</title>
-    <style>
-        /* Your styling here */
-    </style>
 </head>
 <body>
     <h2>Audio to Sound Blocks</h2>
@@ -51,11 +48,11 @@
                 const data = new Float32Array(analyser.frequencyBinCount);
                 analyser.getFloatFrequencyData(data);
 
-                let outputText = "Generated Sound Blocks:\n";
-                let lastTempo = 120; // Default tempo if we can't find a better one
+                let outputText = "";
                 let blockCounter = 0;
+                let lastTempo = 120; // Default tempo if we can't find a better one
 
-                // Example: Generate blocks based on frequency data (simplified)
+                // Generate blocks based on frequency data (simplified)
                 for (let i = 0; i < data.length; i++) {
                     let frequency = data[i];
                     if (frequency > -100) {  // Ignore very low volumes
@@ -63,20 +60,17 @@
                         const tempo = Math.round(120 + Math.random() * 40); // Random tempo for example
 
                         // Build the sound block (simplified version)
-                        outputText += `7,0,${i},0,0,${pitch}+${tempo};\n`;
+                        outputText += `7,0,${i},0,0,${pitch}+${tempo}`;
                         blockCounter++;
 
                         // Make connections if necessary (simplified)
                         if (blockCounter > 1) {
-                            outputText += `${blockCounter-1},${blockCounter};\n`;
+                            outputText += `;${blockCounter-1},${blockCounter}`;
                         }
-
-                        lastTempo = tempo; // Update the last tempo
                     }
                 }
 
-                // Finalize the output
-                outputText += "Tempo/Connections: End\n";
+                // Finalize the output to one line
                 document.getElementById('output').textContent = outputText;
             }).catch(error => {
                 console.error("Error during audio analysis:", error);

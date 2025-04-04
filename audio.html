@@ -4,12 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio to Sound Blocks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 10px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        pre {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: left;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <h2>Audio to Sound Blocks</h2>
     <input type="file" id="audioUpload" accept="audio/*">
     <button onclick="processAudio()">Convert</button>
     <button id="copyButton">Copy to Clipboard</button>
+    <div id="feedback"></div>
     <pre id="output"></pre>
 
     <script src="https://cdn.jsdelivr.net/npm/tone"></script>
@@ -71,8 +102,12 @@
 
                 // Finalize the output to one line
                 document.getElementById('output').textContent = outputText;
+                document.getElementById('feedback').textContent = "Audio processed successfully!";
+                document.getElementById('feedback').classList.add('success');
             }).catch(error => {
                 console.error("Error during audio analysis:", error);
+                document.getElementById('feedback').textContent = "Error processing audio.";
+                document.getElementById('feedback').classList.add('error');
             });
         }
 
@@ -80,9 +115,11 @@
         document.getElementById('copyButton').addEventListener('click', () => {
             const outputText = document.getElementById('output').textContent;
             navigator.clipboard.writeText(outputText).then(() => {
-                alert("Copied to clipboard!");
+                document.getElementById('feedback').textContent = "Copied to clipboard!";
+                document.getElementById('feedback').classList.add('success');
             }).catch(err => {
-                alert("Error copying to clipboard: " + err);
+                document.getElementById('feedback').textContent = "Error copying to clipboard.";
+                document.getElementById('feedback').classList.add('error');
             });
         });
     </script>
